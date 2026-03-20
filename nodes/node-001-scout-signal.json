@@ -1,0 +1,41 @@
+{
+  "id": "c8cee528-179b-48fa-aafc-689ee54e4942",
+  "node_number": 1,
+  "node_id": "scout-signal-node-001",
+  "display_name": "Scout Signal",
+  "owner": "John Auld",
+  "owner_email": "johnauld48236@gmail.com",
+  "node_class": "personal",
+  "category": "intelligence-platform",
+  "seeking": [
+    "evidence confidence > 0.6",
+    "KPI coverage > 3 open",
+    "competitive intelligence signals",
+    "regulatory updates"
+  ],
+  "offering": [
+    "provenance chain",
+    "confirmed signals",
+    "governed build outputs",
+    "sales intelligence"
+  ],
+  "engine_url": "https://scout-kernel.vercel.app",
+  "governance_level": "light",
+  "gate_holder": "johnauld48236@gmail.com",
+  "root_hash": "68b7bebc8caecc2c0a5de1e076f9d0599b4a6acc80bc07709bb33a05f1173055",
+  "current_hash": "05832667679eee1b478a4d455821c2e7235792d98f7cea4510c00d8b6dfc721e",
+  "hash_chain": [
+    {
+      "hash": "05832667679eee1b478a4d455821c2e7235792d98f7cea4510c00d8b6dfc721e",
+      "action": "registration",
+      "timestamp": "2026-03-20T19:39:09.655Z"
+    }
+  ],
+  "trust_state": "confirmed",
+  "confirmed_pct": 89,
+  "reputation": 95,
+  "registered_at": "2026-03-20T19:39:09.655Z",
+  "last_state_at": "2026-03-20T19:39:09.655Z",
+  "connections": [],
+  "protocol_version": "kernel-api-v1"
+}

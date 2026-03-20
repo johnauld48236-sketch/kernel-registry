@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/johnauld48236-sketch/kernel-registry/schema/node-registration.json",
+  "title": "Kernel Registry — Node Registration Record",
+  "description": "Schema for registering a Knowledge Node in the Kernel Registry. Registration generates a root hash — the node's permanent identity.",
+  "type": "object",
+  "required": [
+    "node_number",
+    "node_id",
+    "display_name",
+    "owner",
+    "owner_email",
+    "node_class",
+    "category",
+    "root_hash",
+    "current_hash",
+    "hash_chain",
+    "registered_at",
+    "protocol_version"
+  ],
+  "properties": {
+    "node_number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Sequential registration number. Immutable after registration."
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+-node-[0-9]{3}$",
+      "description": "Unique human-readable identifier. Format: {name}-node-{number}."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable display name for the node."
+    },
+    "owner": {
+      "type": "string",
+      "description": "Name of the node owner."
+    },
+    "owner_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email of the node owner. Used in root hash generation."
+    },
+    "node_class": {
+      "type": "string",
+      "enum": ["personal", "enterprise"],
+      "description": "Classification of the node."
+    },
+    "category": {
+      "type": "string",
+      "description": "Functional category (e.g., intelligence-platform, security)."
+    },
+    "seeking": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Epistemic needs — what this node is looking for from the network."
+    },
+    "offering": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Confirmed outputs — what this node provides to the network."
+    },
+    "engine_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "description": "URL of the node's agent governor or execution endpoint."
+    },
+    "governance_level": {
+      "type": "string",
+      "enum": ["light", "standard", "heavy"],
+      "default": "light",
+      "description": "Governance gate intensity for this node."
+    },
+    "gate_holder": {
+      "type": ["string", "null"],
+      "description": "Identity of the human who confirms governance gates."
+    },
+    "root_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 root hash. Generated at registration. Immutable. This is the node's permanent identity."
+    },
+    "current_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hash of the current state. Updates with each state change."
+    },
+    "hash_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hash", "timestamp", "action"],
+        "properties": {
+          "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "action": { "type": "string" },
+          "previous_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      },
+      "description": "Ordered array of all state hashes. First entry is registration."
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["confirmed", "claimed", "seeking"],
+      "default": "claimed",
+      "description": "Current trust level of the node's outputs."
+    },
+    "confirmed_pct": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "description": "Percentage of outputs that have been independently confirmed."
+    },
+    "reputation": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Network reputation score."
+    },
+    "registered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of registration. Used in root hash generation."
+    },
+    "last_state_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the most recent state change."
+    },
+    "connections": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Root hashes of connected nodes."
+    },
+    "protocol_version": {
+      "type": "string",
+      "default": "kernel-api-v1",
+      "description": "Version of the Kernel Registry protocol."
+    }
+  },
+  "additionalProperties": false
+}

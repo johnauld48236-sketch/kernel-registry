@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/johnauld48236-sketch/kernel-registry/schema/state-update.json",
+  "title": "Kernel Registry — State Update Record",
+  "description": "Schema for recording a state change on a registered Knowledge Node. Every state update generates a new hash chained to the root.",
+  "type": "object",
+  "required": ["root_hash"],
+  "properties": {
+    "root_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "The target node's root hash (permanent identity)."
+    },
+    "seeking": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Updated epistemic needs."
+    },
+    "offering": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Updated confirmed outputs."
+    },
+    "trust_state": {
+      "type": "string",
+      "enum": ["confirmed", "claimed", "seeking"],
+      "description": "Updated trust level."
+    },
+    "confirmed_pct": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Updated confirmation percentage."
+    },
+    "reputation": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Updated reputation score."
+    },
+    "connections": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Updated connection list (root hashes)."
+    },
+    "engine_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Updated engine endpoint."
+    },
+    "governance_level": {
+      "type": "string",
+      "enum": ["light", "standard", "heavy"],
+      "description": "Updated governance level."
+    },
+    "gate_holder": {
+      "type": "string",
+      "description": "Updated gate holder identity."
+    },
+    "action": {
+      "type": "string",
+      "default": "state_update",
+      "description": "Description of the state change action."
+    }
+  },
+  "additionalProperties": false
+}

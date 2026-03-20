@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/johnauld48236-sketch/kernel-registry/schema/connection-handshake.json",
+  "title": "Kernel Registry — Connection Handshake",
+  "description": "Schema for initiating a connection between two Knowledge Nodes. Both nodes must verify each other's hash chain before the connection is confirmed.",
+  "type": "object",
+  "required": ["initiator_hash", "target_hash", "initiated_at"],
+  "properties": {
+    "initiator_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Root hash of the node initiating the connection."
+    },
+    "target_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Root hash of the node being connected to."
+    },
+    "initiated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of handshake initiation."
+    },
+    "shape_match": {
+      "type": "object",
+      "properties": {
+        "initiator_seeking_matched": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Initiator's seeking items matched by target's offering."
+        },
+        "target_seeking_matched": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Target's seeking items matched by initiator's offering."
+        },
+        "match_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Normalized shape compatibility score."
+        }
+      },
+      "description": "Shape compatibility analysis between the two nodes."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "confirmed", "rejected"],
+      "default": "pending",
+      "description": "Current handshake status."
+    },
+    "confirmed_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of confirmation, if confirmed."
+    },
+    "initiator_chain_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the target has verified the initiator's hash chain."
+    },
+    "target_chain_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the initiator has verified the target's hash chain."
+    }
+  },
+  "additionalProperties": false
+}
