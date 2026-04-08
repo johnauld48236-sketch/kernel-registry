@@ -1,0 +1,18 @@
+{
+  "name": "kernel-registry",
+  "version": "1.0.0",
+  "description": "Kernel Registry — governed identity protocol for Knowledge Nodes",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "seed": "node scripts/seed-existing-nodes.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.93.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vercel/node": "^3.2.0",
+    "typescript": "^5.4.5"
+  }
+}
