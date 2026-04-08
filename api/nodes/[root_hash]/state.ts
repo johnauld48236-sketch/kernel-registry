@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { handleCorsPreflight } from '../../../lib/cors.js';
 import { getServiceClient } from '../../../lib/supabase.js';
 import { validateApiKey } from '../../../lib/auth.js';
 import { computeStateHash } from '../../../lib/hash.js';
@@ -12,6 +13,8 @@ import { rejectIfAi } from '../../../lib/humans.js';
  * STATE_CHANGED event. changed_by must be a human email.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCorsPreflight(req, res)) return;
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });

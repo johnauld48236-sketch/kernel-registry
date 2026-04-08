@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { handleCorsPreflight } from '../../lib/cors.js';
 import { getServiceClient } from '../../lib/supabase.js';
 import { validateApiKey } from '../../lib/auth.js';
 import { rejectIfAi } from '../../lib/humans.js';
@@ -18,6 +19,8 @@ const LIST_MAX_LIMIT = 200;
  *          human email. Returns connection_id and state='PENDING'.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCorsPreflight(req, res)) return;
+
   if (req.method === 'GET') return handleList(req, res);
   if (req.method === 'POST') return handlePost(req, res);
 

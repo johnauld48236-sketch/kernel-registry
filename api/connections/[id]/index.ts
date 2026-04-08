@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { handleCorsPreflight } from '../../../lib/cors.js';
 import { getServiceClient } from '../../../lib/supabase.js';
 
 /**
@@ -8,6 +9,8 @@ import { getServiceClient } from '../../../lib/supabase.js';
  * Anyone can verify that a connection exists and what state it's in.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCorsPreflight(req, res)) return;
+
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed' });
