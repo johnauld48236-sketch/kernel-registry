@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getServiceClient } from '../../../lib/supabase.js';
-import { validateApiKey } from '../../../lib/auth.js';
-import { computeStateHash } from '../../../lib/hash.js';
-import { rejectIfAi } from '../../../lib/humans.js';
+import { getServiceClient } from '../../../lib/supabase';
+import { validateApiKey } from '../../../lib/auth';
+import { computeStateHash } from '../../../lib/hash';
+import { rejectIfAi } from '../../../lib/humans';
 
 /**
  * POST /api/nodes/:root_hash/state
