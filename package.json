@@ -4,6 +4,7 @@
   "description": "Kernel Registry — governed identity protocol for Knowledge Nodes",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "seed": "node scripts/seed-existing-nodes.js"
   },

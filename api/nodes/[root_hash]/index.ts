@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getServiceClient } from '../../../lib/supabase';
+import { getServiceClient } from '../../../lib/supabase.js';
 
 /**
  * GET /api/nodes/:root_hash
