@@ -3,21 +3,131 @@ import { getServiceClient } from '../../lib/supabase.js';
 import { validateApiKey } from '../../lib/auth.js';
 import { rejectIfAi } from '../../lib/humans.js';
 
+const LIST_DEFAULT_LIMIT = 50;
+const LIST_MAX_LIMIT = 200;
+
 /**
- * POST /api/connections
+ * /api/connections
  *
- * Initiate a governed connection between two confirmed nodes.
- * Both nodes must exist and have trust_state='confirmed'.
- * requested_by must be a human email. Returns connection_id
- * and state='PENDING' — both nodes' gate holders must
- * authorize separately to advance to CONFIRMED.
+ *   GET  → public list of connections with both-side display names
+ *          query: limit, offset, state
+ *          response: { connections, total, limit, offset }
+ *
+ *   POST → initiate a governed connection between two confirmed
+ *          nodes. Bearer-auth required. requested_by must be a
+ *          human email. Returns connection_id and state='PENDING'.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method === 'GET') return handleList(req, res);
+  if (req.method === 'POST') return handlePost(req, res);
+
+  res.setHeader('Allow', 'GET, POST');
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+// ── GET — public list ─────────────────────────────────────────
+async function handleList(req: VercelRequest, res: VercelResponse) {
+  const limit = Math.min(
+    Math.max(parseInt(String(req.query.limit ?? LIST_DEFAULT_LIMIT), 10) || LIST_DEFAULT_LIMIT, 1),
+    LIST_MAX_LIMIT,
+  );
+  const offset = Math.max(parseInt(String(req.query.offset ?? 0), 10) || 0, 0);
+  const state = req.query.state ? String(req.query.state) : null;
+
+  if (state && !['PENDING', 'CONFIRMED', 'REVOKED'].includes(state)) {
+    return res.status(400).json({ error: 'state must be one of: PENDING, CONFIRMED, REVOKED' });
   }
 
+  try {
+    const supabase = getServiceClient();
+
+    // Total count (filtered)
+    let countQuery = supabase
+      .from('registry_connections')
+      .select('id', { count: 'exact', head: true });
+    if (state) countQuery = countQuery.eq('state', state);
+
+    const { count, error: countErr } = await countQuery;
+    if (countErr) return res.status(500).json({ error: countErr.message });
+
+    // Page query
+    let pageQuery = supabase
+      .from('registry_connections')
+      .select(`
+        id,
+        node_a_root_hash,
+        node_b_root_hash,
+        shared_kpi_signatures,
+        authorized_by_a,
+        authorized_by_b,
+        authorized_at,
+        state,
+        created_at
+      `)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    if (state) pageQuery = pageQuery.eq('state', state);
+
+    const { data: rows, error } = await pageQuery;
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Stitch in display names for both sides via a single follow-up query
+    const allHashes = new Set<string>();
+    for (const row of rows || []) {
+      if (row.node_a_root_hash) allHashes.add(row.node_a_root_hash as string);
+      if (row.node_b_root_hash) allHashes.add(row.node_b_root_hash as string);
+    }
+
+    const nodeMap = new Map<string, { node_id: string; display_name: string; root_hash: string }>();
+    if (allHashes.size > 0) {
+      const { data: nodeRows, error: nodeErr } = await supabase
+        .from('registry_nodes')
+        .select('node_id, display_name, root_hash')
+        .in('root_hash', Array.from(allHashes));
+      if (nodeErr) return res.status(500).json({ error: nodeErr.message });
+      for (const n of nodeRows || []) {
+        nodeMap.set(n.root_hash as string, {
+          node_id: n.node_id as string,
+          display_name: n.display_name as string,
+          root_hash: n.root_hash as string,
+        });
+      }
+    }
+
+    const connections = (rows || []).map(row => ({
+      connection_id: row.id,
+      node_a: nodeMap.get(row.node_a_root_hash as string) || {
+        node_id: null,
+        display_name: '(unknown)',
+        root_hash: row.node_a_root_hash,
+      },
+      node_b: nodeMap.get(row.node_b_root_hash as string) || {
+        node_id: null,
+        display_name: '(unknown)',
+        root_hash: row.node_b_root_hash,
+      },
+      state: row.state,
+      shared_kpi_signatures: row.shared_kpi_signatures || [],
+      authorized_by_a: row.authorized_by_a,
+      authorized_by_b: row.authorized_by_b,
+      authorized_at: row.authorized_at,
+      created_at: row.created_at,
+    }));
+
+    return res.status(200).json({
+      connections,
+      total: count ?? 0,
+      limit,
+      offset,
+    });
+  } catch (err) {
+    console.error('[connections list]', err);
+    return res.status(500).json({ error: err instanceof Error ? err.message : 'Internal server error' });
+  }
+}
+
+// ── POST — initiate connection ────────────────────────────────
+async function handlePost(req: VercelRequest, res: VercelResponse) {
   if (!validateApiKey(req)) {
     return res.status(401).json({ error: 'Missing or invalid Bearer token' });
   }
